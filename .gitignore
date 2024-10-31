@@ -1,0 +1,3 @@
+data/*
+!data/proteins/
+data/proteins/*
