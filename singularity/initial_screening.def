@@ -1,0 +1,35 @@
+BootStrap: docker
+From: continuumio/miniconda3  # Base image with Miniconda
+
+%files
+    environment.yml /environment.yml  # Copy the environment.yml file into the container
+
+%post
+    # Install Conda environment from the environment.yml file
+    apt-get update && apt-get install -y wget curl && apt-get clean
+
+    # Activate Conda setup
+    . /opt/conda/etc/profile.d/conda.sh
+
+    # Create the environment specified in environment.yml
+    conda env create -f /environment.yml
+
+    # Clean up to save space
+    conda clean -a
+
+%environment
+    # Automatically activate the Conda environment when the container runs
+    export PATH="/opt/conda/envs/$(head -1 /environment.yml | cut -d' ' -f2)/bin:$PATH"
+    export CONDA_DEFAULT_ENV=$(head -1 /environment.yml | cut -d' ' -f2)
+
+%runscript
+    # Script to run when the container starts
+    . /opt/conda/etc/profile.d/conda.sh
+    conda activate $(head -1 /environment.yml | cut -d' ' -f2)
+    exec "$@"
+
+%test
+    # Test the Conda environment
+    . /opt/conda/etc/profile.d/conda.sh
+    conda activate $(head -1 /environment.yml | cut -d' ' -f2)
+    python -c "import sys; print(f'Python version: {sys.version}')"

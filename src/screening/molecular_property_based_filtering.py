@@ -5,6 +5,8 @@ from rdkit.Chem import Descriptors
 from rdkit.Chem import RDConfig
 import sys
 import os
+import abc
+from tqdm import tqdm
 
 from typing import Dict, Any
 
@@ -17,9 +19,10 @@ import csv
 from pathlib import Path
 
 
-class MolecularFilter:
+class MolecularFilter(abc.ABC):
     name: str
 
+    @abc.abstractmethod
     def apply(self, *args, **kwargs) -> bool:
         raise NotImplementedError("Subclasses should implement this method")
 
@@ -159,7 +162,7 @@ class TPSAFilter(MolecularFilter):
     name = "TPSA_Filter"
 
     def apply(self, molecule: rdkit.Chem.Mol) -> float:
-        return Chem.Crippen.MolTPSA(molecule)
+        return Descriptors.TPSA(molecule)
 
 
 class SAScoreFilter(MolecularFilter):
@@ -173,7 +176,8 @@ class NPScoreFilter(MolecularFilter):
     name = "NP_Score_Filter"
 
     def apply(self, molecule: rdkit.Chem.Mol) -> float:
-        return npscorer.scoreMol(molecule)
+        fscore = npscorer.readNPModel()
+        return npscorer.scoreMol(molecule, fscore)
 
 
 class MolecularPropertyCalculator:
@@ -271,20 +275,36 @@ class MolecularPropertyCalculator:
                     h_bond_acceptors,
                     logp,
                 )
-            if QEDFilter.name in self.filters:
+        except Exception as e:
+            results["Errors"].append(str(e))
+
+        if QEDFilter.name in self.filters:
+            try:
                 results[QEDFilter.name] = self.filters[QEDFilter.name].apply(molecule)
-            if TPSAFilter.name in self.filters:
+            except Exception as e:
+                results["Errors"].append(str(e))
+
+        if TPSAFilter.name in self.filters:
+            try:
                 results[TPSAFilter.name] = self.filters[TPSAFilter.name].apply(molecule)
-            if SAScoreFilter.name in self.filters:
+            except Exception as e:
+                results["Errors"].append(str(e))
+
+        if SAScoreFilter.name in self.filters:
+            try:
                 results[SAScoreFilter.name] = self.filters[SAScoreFilter.name].apply(
                     molecule
                 )
-            if NPScoreFilter.name in self.filters:
+            except Exception as e:
+                results["Errors"].append(str(e))
+
+        if NPScoreFilter.name in self.filters:
+            try:
                 results[NPScoreFilter.name] = self.filters[NPScoreFilter.name].apply(
                     molecule
                 )
-        except Exception as e:
-            results["Errors"].append(str(e))
+            except Exception as e:
+                results["Errors"].append(str(e))
 
         return results
 
@@ -299,14 +319,12 @@ class MolecularPropertyCalculator:
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
 
-            for molecule in supplier:
+            progres_bar = tqdm(supplier, desc="Processing molecules")
+            for molecule in progres_bar:
                 if molecule is None:
                     continue
-                chembl_id = (
-                    molecule.GetProp("_Name")
-                    if molecule.HasProp("_Name")
-                    else "Unknown"
-                )
+                chembl_id = molecule.GetProp("chembl_id")
+
                 results = self.calculate_basic_filters(molecule)
                 results["ChemblID"] = chembl_id
                 writer.writerow(results)
