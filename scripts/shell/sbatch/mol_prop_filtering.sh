@@ -24,11 +24,9 @@
 export PATH="/usr/local/cuda/bin:${PATH}"
 
 # ----------------------------------------------------------------------------------------
-SINGULARITY_CONTAINER="/home/pszmkptrzk/apptainer/singularity-container-mol.sif"
+SINGULARITY_CONTAINER="/home/pszmkptrzk/apptainer/initial-screening-container.sif"
 # ----------------------------------------------------------------------------------------
 
-# Define neptune project name
-# PROJECT_NAME="multimodal/cmnist"
 
 # Set script name
 SCRIPT_NAME=$(basename "$0")
@@ -59,5 +57,8 @@ nvcc -V
 # Run bash script in the singularity container
 srun singularity exec --nv $SINGULARITY_CONTAINER bash -c "
     python3 --version && \
+    conda list && \
     python3 src/run_molecular_property_based_filtering.py
 "
+# srun singularity exec --nv $SINGULARITY_CONTAINER bash -c "conda list"
+# ". /opt/conda/etc/profile.d/conda.sh && conda activate ipz && conda list | grep rdkit"
