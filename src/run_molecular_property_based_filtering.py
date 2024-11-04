@@ -7,6 +7,9 @@ from rdkit import Chem
 def main():
     parser = argparse.ArgumentParser(description="Drug Discovery Project")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+    parser.add_argument(
+        "--num_threads", type=int, default=1, help="Number of writer threads"
+    )
 
     args = parser.parse_args()
 
@@ -19,7 +22,9 @@ def main():
 
     mol_prop_calc = MolecularPropertyCalculator()
 
-    supplier = Chem.MultithreadedSDMolSupplier(CHEMBL_34_SDF_PATH)
+    supplier = Chem.MultithreadedSDMolSupplier(
+        fileName=CHEMBL_34_SDF_PATH, numWriterThreads=args.num_threads
+    )
 
     mol_prop_calc.compute_filtering_results_and_save_to_csv(
         supplier=supplier, output_csv_path=INITIAL_SCREENING_RESULTS_PATH

@@ -17,6 +17,7 @@ sys.path.append(os.path.join(RDConfig.RDContribDir, "NP_Score"))
 import npscorer
 import csv
 from pathlib import Path
+import pandas as pd
 
 
 class MolecularFilter(abc.ABC):
@@ -314,14 +315,28 @@ class MolecularPropertyCalculator:
     def compute_filtering_results_and_save_to_csv(
         self, supplier: Chem.SDMolSupplier, output_csv_path: Path
     ):
-        with open(output_csv_path, mode="w", newline="") as csv_file:
+
+        if output_csv_path.exists():
+            computed_chembl_ids = set(
+                pd.read_csv(output_csv_path, sep=",", index_col=0).index
+            )
+            mode = "a"
+        else:
+            computed_chembl_ids = set()
+            mode = "w"
+
+        with open(output_csv_path, mode=mode, newline="") as csv_file:
             fieldnames = ["ChemblID"] + self.get_result_keys()
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-            writer.writeheader()
+            if mode == "w":
+                writer.writeheader()
 
             progres_bar = tqdm(supplier, desc="Processing molecules")
             for molecule in progres_bar:
-                if molecule is None:
+                if (
+                    molecule is None
+                    or molecule.GetProp("chembl_id") in computed_chembl_ids
+                ):
                     continue
                 chembl_id = molecule.GetProp("chembl_id")
 
