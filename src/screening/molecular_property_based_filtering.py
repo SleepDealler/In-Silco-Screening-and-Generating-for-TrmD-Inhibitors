@@ -186,7 +186,7 @@ class ADMETScoresFilter(MolecularFilter):
 
     def apply(self, molecular_weight: float, logp: float) -> float:
         molecular_weight_term = 0 if molecular_weight < 330 else 330 - molecular_weight
-        admet_score = (2.5 - logp) + molecular_weight_term
+        admet_score = abs(2.5 - logp) + abs(molecular_weight_term)
 
         return admet_score
 
