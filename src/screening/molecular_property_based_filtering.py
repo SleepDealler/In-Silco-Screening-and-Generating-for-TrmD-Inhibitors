@@ -181,6 +181,16 @@ class NPScoreFilter(MolecularFilter):
         return npscorer.scoreMol(molecule, fscore)
 
 
+class ADMETScoresFilter(MolecularFilter):
+    name = "ADMET_Scores_Filter"
+
+    def apply(self, molecular_weight: float, logp: float) -> float:
+        molecular_weight_term = 0 if molecular_weight < 330 else 330 - molecular_weight
+        admet_score = (2.5 - logp) + molecular_weight_term
+
+        return admet_score
+
+
 class MolecularPropertyCalculator:
     def __init__(self, filters_to_include: list[str] = None):
         all_filters = {
@@ -194,6 +204,7 @@ class MolecularPropertyCalculator:
             TPSAFilter.name: TPSAFilter(),
             SAScoreFilter.name: SAScoreFilter(),
             NPScoreFilter.name: NPScoreFilter(),
+            ADMETScoresFilter.name: ADMETScoresFilter(),
         }
         if filters_to_include is None:
             self.filters = all_filters
@@ -305,6 +316,15 @@ class MolecularPropertyCalculator:
                     molecule
                 )
             except Exception as e:
+                results["Errors"].append(str(e))
+
+        if ADMETScoresFilter.name in self.filters:
+            try:
+                results[ADMETScoresFilter.name] = self.filters[
+                    ADMETScoresFilter.name
+                ].apply(molecular_weight, logp)
+            except Exception as e:
+
                 results["Errors"].append(str(e))
 
         return results

@@ -27,8 +27,9 @@ srun singularity exec --nv $SINGULARITY_CONTAINER bash -c "
     export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
     python3 --version && \
     conda list && \
-    python3 src/run_molecular_property_based_filtering.py --num_threads $SLURM_CPUS_PER_TASK \
-    --save_filename 'chembl_34_initial_screening_results.csv'
+    python3 src/run_molecular_property_based_filtering_just_admet_score.py --num_threads $SLURM_CPUS_PER_TASK \
+    --save_filename 'chembl_34_initial_screening_results_just_admet.csv' \
+    --filters_to_include 'ADMET_Scores_Filter'
 "
 
 # #!/bin/bash
