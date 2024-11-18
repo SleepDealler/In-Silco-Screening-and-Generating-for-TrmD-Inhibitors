@@ -1,6 +1,6 @@
 import argparse
 from utils.paths import CHEMBL_34_SDF_PATH, INITIAL_SCREENING_RESULTS_PATH
-from screening.molecular_property_based_filtering import MolecularPropertyCalculator
+from screening import MolecularPropertyCalculator
 from rdkit import Chem
 
 
