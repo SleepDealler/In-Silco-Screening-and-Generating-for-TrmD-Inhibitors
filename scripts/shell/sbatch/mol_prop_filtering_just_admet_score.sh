@@ -9,6 +9,21 @@
 #SBATCH --output=/home/pszmkptrzk/run_logs/outputs/%x-%j.out
 #SBATCH --error=/home/pszmkptrzk/run_logs/errors/%x-%j.error
 
+# ----------------------------------------------------------------------------------------
+SINGULARITY_CONTAINER="/home/pszmkptrzk/apptainer/initial-screening-container.sif"
+# ----------------------------------------------------------------------------------------
+
+# Set script name
+SCRIPT_NAME=$(basename "$0")
+CURRENT_DATE=$(date +%Y-%m-%d)
+
+# Print communicates
+echo "Script name ${SCRIPT_NAME}"
+echo "Current date ${CURRENT_DATE}"
+echo "Home directory: ${HOME}"
+echo "Working directory: $PWD"
+echo "Current node: ${SLURM_NODELIST}"
+echo "PATH: $PATH"
 
 # Print job information
 echo "Current node: ${SLURM_NODELIST}"
@@ -17,6 +32,7 @@ echo "Job ID: ${SLURM_JOB_ID}"
 # Compute  info
 echo "Number of CPUs per task: ${SLURM_CPUS_PER_TASK}"
 echo "Number of CPU cores available: $(nproc)"
+
 # Print the total number of CPU cores allocated
 echo "Total number of CPU cores allocated: $((SLURM_NTASKS * SLURM_CPUS_PER_TASK))"
 # Set the number of threads for your application
@@ -27,9 +43,8 @@ srun singularity exec --nv $SINGULARITY_CONTAINER bash -c "
     export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
     python3 --version && \
     conda list && \
-    python3 src/run_molecular_property_based_filtering_just_admet_score.py --num_threads $SLURM_CPUS_PER_TASK \
-    --save_filename 'chembl_34_initial_screening_results_just_admet.csv' \
-    --filters_to_include 'ADMET_Scores_Filter'
+    python3 src/run_molecular_property_based_filtering.py --num_threads $SLURM_CPUS_PER_TASK \
+    --save_filename 'chembl_34_initial_screening_results_just_admet_score.csv' --filters_to_include 'ADMET_Scores_Filter'
 "
 
 # #!/bin/bash
