@@ -37,14 +37,14 @@ class LipinskiRuleOf5(MolecularFilter):
         logp: float,
         h_bond_donor: int,
         h_bond_acceptors: int,
-        rotatable_bonds: int,
+        # rotatable_bonds: int,
     ) -> bool:
         return (
             molecular_weight <= 500
             and logp <= 5
             and h_bond_donor <= 5
-            and h_bond_acceptors <= 5
-            and rotatable_bonds <= 5
+            and h_bond_acceptors <= 10  # changed from 5
+            # and rotatable_bonds <= 5
         )
 
 
@@ -143,9 +143,9 @@ class DrugLikeFilter(MolecularFilter):
         logp: float,
     ) -> bool:
         return (
-            molecular_weight < 400
+            molecular_weight < 500  # changed from 400
             and num_of_rings > 0
-            and rotatable_bonds < 5
+            and rotatable_bonds < 9  # changed from 5
             and h_bond_donor <= 5
             and h_bond_acceptors <= 10
             and logp < 5
@@ -250,7 +250,7 @@ class MolecularPropertyCalculator:
                     logp,
                     h_bond_donor,
                     h_bond_acceptors,
-                    rotatable_bonds,
+                    # rotatable_bonds,
                 )
             if GhoseFilter.name in self.filters:
                 results[GhoseFilter.name] = self.filters[GhoseFilter.name].apply(
