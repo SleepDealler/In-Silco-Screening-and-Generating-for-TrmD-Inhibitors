@@ -8,3 +8,9 @@ In this project, you will find the code organized into several directories:
 - **Notebooks**: The rest of the code is in the `notebooks` directory. Note that some notebooks used only to load the data were excluded.
 - **Final Report**: might be found in Report.pdf.
 - **Poster**: The poster might be found in POSTER.pdf.
+
+Project contribution:
+Daniel Zalewski 30%
+Przemysław Pietrzak 30%
+Katarzyna Dubrowska 20%
+Szymon Jakubicz 20%
